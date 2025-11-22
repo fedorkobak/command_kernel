@@ -1,0 +1,9 @@
+[project]
+name = "command_kernel"
+version = "0.0.0"
+dependencies = [
+    "bash_kernel==0.10.0"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
