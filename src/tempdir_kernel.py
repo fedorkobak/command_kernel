@@ -16,8 +16,8 @@ class TempDirKernel(CommandKernel):
     - `#init` to create a new directory.
     - `#file` to save the content of the cell to file in temporary directory.
     """
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._init_dir()
 
     def _init_dir(self):
