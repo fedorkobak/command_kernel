@@ -32,7 +32,8 @@ def command(command: str) -> Callable[
     The decorator adds the `_command` attribute to the decorated method.
     """
     def fun(method: Callable[[Any, str], str]) -> Callable[[Any, str], str]:
-        method._command = command
+        # this is a part of design
+        method._command = command  # type: ignore
         return method
     return fun
 
