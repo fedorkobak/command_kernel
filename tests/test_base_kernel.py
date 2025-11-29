@@ -8,7 +8,7 @@ from src.command_kernel import CommandKernel, command
 
 class Kernel(CommandKernel):
     @command('command1')
-    def command1(self, code: str) -> str:
+    def command1(self, code: str, *args, **kwargs) -> str:
         return code
 
     @command('command2')
@@ -99,14 +99,14 @@ class TestCommandsCall(TestCase):
         exp_args = ["arg1", "arg2"]
         exp_kwargs = {"kwarg1": "val1", "kwarg2": "val2"}
 
-        command = (
-            "command1 " +
-            " ".join(exp_args) +
-            " ".join([f"--{kwarg} {val}" for kwarg, val in exp_kwargs.items()])
+        command = " ".join(
+            ["command1"] +
+            exp_args +
+            [f"--{kwarg} {val}" for kwarg, val in exp_kwargs.items()]
         )
 
         kernel.do_execute(code=command)
-        command1.assert_called_once_with(exp_args, exp_kwargs)
+        command1.assert_called_once_with("", *exp_args, **exp_kwargs)
 
 
 @patch.object(kernel, attribute="always", wraps=kernel.command1)
