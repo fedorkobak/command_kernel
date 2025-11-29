@@ -18,15 +18,15 @@ class TempDirKernel(CommandKernel):
     """
     def __init__(self):
         super().__init__()
-        self._init_env()
+        self._init_dir()
 
-    def _init_env(self):
+    def _init_dir(self):
         self.dir = TemporaryDirectory()
         self.bashwrapper.run_command(f"cd {self.dir.name}")
 
     @command("#init")
     def init_env(self, command: str) -> str:
-        self._init_env()
+        self._init_dir()
         return command
 
     @command("#file")
