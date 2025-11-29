@@ -1,6 +1,10 @@
+import logging
+from pathlib import Path
 from tempfile import TemporaryDirectory
 from ipykernel.kernelapp import IPKernelApp
 from command_kernel import CommandKernel, command
+
+logger = logging.getLogger(__file__)
 
 
 class TempDirKernel(CommandKernel):
@@ -13,6 +17,7 @@ class TempDirKernel(CommandKernel):
     - `#file` to save the content of the cell to file in temporary directory.
     """
     def __init__(self):
+        super().__init__()
         self._init_env()
 
     def _init_env(self):
@@ -26,6 +31,10 @@ class TempDirKernel(CommandKernel):
 
     @command("#file")
     def file(self, code: str, *args, **kwargs) -> str:
+        logger.info("File command is invoked")
+        filename = args[0]
+        with open(Path(self.dir.name) / filename, "w") as file:
+            file.write(code)
         return ""
 
 

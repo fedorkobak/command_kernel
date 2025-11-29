@@ -1,3 +1,4 @@
+from pathlib import Path
 from unittest import TestCase
 from tempdir_kernel import TempDirKernel
 
@@ -19,6 +20,6 @@ class TestEnvironment(TestCase):
 
         environment_kernel.do_execute(code=code)
 
-        with open(environment_kernel.dir.name, "rf") as f:
+        with open(Path(environment_kernel.dir.name) / file_name, "r") as f:
             content = f.read()
         self.assertEqual(exp_content, content)
