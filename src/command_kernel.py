@@ -69,21 +69,18 @@ class CommandKernel(BashKernel, metaclass=CommandMeta):
         return (ans[0], ans[1]) if len(ans) > 1 else (ans[0], "")
 
     @classmethod
-    def _command_parsing(
-        cls, command: str
-    ) -> tuple[str, list[str], dict[str, str]]:
+    def _arg_parsing(
+        cls, args: list[str]
+    ) -> tuple[list[str], dict[str, str]]:
         """
-        Separates the command to identifier and arguments.
+        Parses the list of words after command identifier to args and kwargs.
 
         Rertuns
         -------
-        - Identifier of the command.
         - List of the positional arugments.
         - Dictionary of keyword arguments.
         """
-        args = command.split(" ")
-
-        identifier = args.pop(0)
+        args = args.copy()
         pargs = list[str]()
         kwargs = dict[str, str]()
 
@@ -93,7 +90,7 @@ class CommandKernel(BashKernel, metaclass=CommandMeta):
                 kwargs[arg[2:]] = args.pop(0)
             else:
                 pargs.append(arg)
-        return identifier, pargs, kwargs
+        return pargs, kwargs
 
     def _run_commands(self, code: str) -> str:
         """
@@ -107,9 +104,12 @@ class CommandKernel(BashKernel, metaclass=CommandMeta):
         first = True
         while True:
             command, remaining = self._pop_command(code=code)
-            identifier, args, kwargs = self._command_parsing(command=command)
+
+            words = command.split(" ")
+            identifier = words.pop(0)
 
             if identifier in self._commands:
+                args, kwargs = self._arg_parsing(args=words)
                 # code = self._commands[command](self, remaining) Wrong
                 # the method bounded to the command have to runned as attibute
                 method = self._commands[identifier]

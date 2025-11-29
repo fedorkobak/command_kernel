@@ -26,24 +26,34 @@ kernel = Kernel()
 
 
 class TestCommandParsing(TestCase):
-    def test_command_parsing(self):
-        exp_identifier = "identifier"
+    def test_arg_parsing(self):
         exp_args = ["pos1", "pos2"]
         exp_kwargs = {
             "keyword1": "val1",
             "keyword2": "val2"
         }
 
-        command = " ".join(
-            [exp_identifier] +
+        command = (
             exp_args +
-            [f"--{key} {val}" for key, val in exp_kwargs.items()]
+            [
+                # key word args to sequence fo words
+                word
+                for key, val in exp_kwargs.items()
+                for word in [f"--{key}", val]
+            ]
         )
 
-        identifier, args, kwargs = CommandKernel._command_parsing(command)
-        self.assertEqual(exp_identifier, identifier)
+        args, kwargs = CommandKernel._arg_parsing(command)
         self.assertEqual(exp_args, args)
         self.assertEqual(exp_kwargs, kwargs)
+
+    @patch.object(Kernel, attribute="_arg_parsing")
+    def test_arg_parsing_invocation(self, arg_parsing: MagicMock):
+        '''
+        Argument parsing must only be invoked if command provided.
+        '''
+        kernel._run_commands("not a command")
+        arg_parsing.assert_not_called()
 
 
 @patch.object(kernel, attribute="command2", wraps=kernel.command2)
