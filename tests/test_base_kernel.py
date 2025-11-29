@@ -25,6 +25,27 @@ executed_code = dedent("""
 kernel = Kernel()
 
 
+class TestCommandParsing(TestCase):
+    def test_command_parsing(self):
+        exp_identifier = "identifier"
+        exp_args = ["pos1", "pos2"]
+        exp_kwargs = {
+            "keyword1": "val1",
+            "keyword2": "val2"
+        }
+
+        command = " ".join(
+            [exp_identifier] +
+            exp_args +
+            [f"--{key} {val}" for key, val in exp_kwargs.items()]
+        )
+
+        identifier, args, kwargs = CommandKernel._command_parsing(command)
+        self.assertEqual(exp_identifier, identifier)
+        self.assertEqual(exp_args, args)
+        self.assertEqual(exp_kwargs, kwargs)
+
+
 @patch.object(kernel, attribute="command2", wraps=kernel.command2)
 @patch.object(kernel, attribute="command1", wraps=kernel.command1)
 class TestCommandsCall(TestCase):
@@ -71,6 +92,22 @@ class TestCommandsCall(TestCase):
         kernel.do_execute(code="command1")
         command2.assert_called_with(command1_out)
 
+    def test_arguments(self, command1: MagicMock, comman2: MagicMock):
+        '''
+        If the arguments are passed to the method correctly.
+        '''
+        exp_args = ["arg1", "arg2"]
+        exp_kwargs = {"kwarg1": "val1", "kwarg2": "val2"}
+
+        command = (
+            "command1 " +
+            " ".join(exp_args) +
+            " ".join([f"--{kwarg} {val}" for kwarg, val in exp_kwargs.items()])
+        )
+
+        kernel.do_execute(code=command)
+        command1.assert_called_once_with(exp_args, exp_kwargs)
+
 
 @patch.object(kernel, attribute="always", wraps=kernel.command1)
 class TestSpecialMethods(TestCase):
@@ -110,24 +147,3 @@ class TestNoCommands(TestCase):
     def test_no_commands(self, no_commands: MagicMock):
         kernel.do_execute(code=executed_code)
         no_commands.assert_called_once_with(executed_code)
-
-
-class TestArgumentsParsing(TestCase):
-    def test_command_parsing(self):
-        exp_identifier = "identifier"
-        exp_args = ["pos1", "pos2"]
-        exp_kwargs = {
-            "keyword1": "val1",
-            "keyword2": "val2"
-        }
-
-        command = (
-            exp_identifier +
-            " ".join(exp_args) +
-            " ".join([f"--{key} {val}" for key, val in exp_kwargs.items()])
-        )
-
-        identifier, args, kwargs = CommandKernel._command_parsing(command)
-        self.assertEqual(exp_identifier, identifier)
-        self.assertEqual(exp_args, args)
-        self.assertEqual(exp_kwargs, kwargs)
