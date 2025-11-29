@@ -1,28 +1,28 @@
 from unittest import TestCase
-from src.command_kernel import CommandMeta
+from src.command_kernel import CommandMeta, command
 
 
 class Commands(metaclass=CommandMeta):
-    def method1(self):
-        pass
-    method1._command = "key1"
+    @command("key1")
+    def method1(self, code: str) -> str:
+        return ""
 
-    def method2(self):
-        pass
-    method2._command = "key2"
+    @command("key2")
+    def method2(self, code: str) -> str:
+        return ""
 
     def method_witout_command(self):
         pass
 
 
 class CommandsHeir(Commands):
-    def heir_method(self):
-        pass
-    heir_method._command = "heir_command"
+    @command("heir_command")
+    def heir_method(self, code: str) -> str:
+        return ""
 
-    def replace_method2(self):
-        pass
-    replace_method2._command = "key2"
+    @command("key2")
+    def replace_method2(self, code: str) -> str:
+        return ""
 
 
 class Heir2(CommandsHeir):
