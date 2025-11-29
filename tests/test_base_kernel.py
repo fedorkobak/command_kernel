@@ -110,3 +110,24 @@ class TestNoCommands(TestCase):
     def test_no_commands(self, no_commands: MagicMock):
         kernel.do_execute(code=executed_code)
         no_commands.assert_called_once_with(executed_code)
+
+
+class TestArgumentsParsing(TestCase):
+    def test_command_parsing(self):
+        exp_identifier = "identifier"
+        exp_args = ["pos1", "pos2"]
+        exp_kwargs = {
+            "keyword1": "val1",
+            "keyword2": "val2"
+        }
+
+        command = (
+            exp_identifier +
+            " ".join(exp_args) +
+            " ".join([f"--{key} {val}" for key, val in exp_kwargs.items()])
+        )
+
+        identifier, args, kwargs = CommandKernel._command_parsing(command)
+        self.assertEqual(exp_identifier, identifier)
+        self.assertEqual(exp_args, args)
+        self.assertEqual(exp_kwargs, kwargs)

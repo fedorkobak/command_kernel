@@ -68,6 +68,19 @@ class CommandKernel(BashKernel, metaclass=CommandMeta):
         ans = code.split("\n", 1)
         return (ans[0], ans[1]) if len(ans) > 1 else (ans[0], "")
 
+    @classmethod
+    def _command_parsing(cls, command: str) -> tuple[str, list[str], dict[str, str]]:
+        """
+        Separates the command to identifier and arguments.
+
+        Rertuns
+        -------
+        - Identifier of the command.
+        - List of the positional arugments.
+        - Dictionary of keyword arguments.
+        """
+        pass
+
     def _run_commands(self, code: str) -> str:
         """
         It pops the first line of `code` if it matches a command executes,
