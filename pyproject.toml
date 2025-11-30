@@ -1,3 +1,7 @@
+[build-system]
+requires = ["hatchling", "ipykernel"]
+build-backend = "hatchling.build"
+
 [project]
 name = "command_kernel"
 version = "0.0.0"
@@ -6,4 +10,10 @@ dependencies = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src"]
+packages = [
+    "src/command_kernel.py",
+    "src/tempdir_kernel.py"
+]
+
+[tool.hatch.build.targets.wheel.shared-data]
+"src/kernel_spec" = "share/jupyter/kernels"
