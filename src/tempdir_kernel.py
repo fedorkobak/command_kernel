@@ -16,6 +16,8 @@ class TempDirKernel(CommandKernel):
     - `#init` to create a new directory.
     - `#file` to save the content of the cell to file in temporary directory.
     """
+    command_symbol: str = "#"
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._init_dir()
@@ -24,12 +26,12 @@ class TempDirKernel(CommandKernel):
         self.dir = TemporaryDirectory()
         self.bashwrapper.run_command(f"cd {self.dir.name}")
 
-    @command("#init")
+    @command("init")
     def init_env(self, command: str) -> str:
         self._init_dir()
         return command
 
-    @command("#file")
+    @command("file")
     def file(self, code: str, *args, **kwargs) -> str:
         logger.info("File command is invoked")
         filename = args[0]
