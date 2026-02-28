@@ -43,12 +43,20 @@ class CommandKernel(BashKernel, metaclass=CommandMeta):
     You can define child classes where you implement additional functionality
     by defining methods and mapping them to the commands expected from the
     client in `command_dict`.
+
     Additionaly in the:
     - `always_runs`: method you can define the behaviour that will be executed
     each time any command executed.
     - `no_commands_run`: method you can define the behaviour that will be
     excuted if there is no commands provided in the input content.
+
+    Attributes
+    ----------
+    start_symbol: specifies the symbol that introduces the command.
     """
+
+    commnad_symbol: str = ""
+    
     def always(self, code: str) -> str:
         return code
 

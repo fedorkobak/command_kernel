@@ -7,6 +7,8 @@ from src.command_kernel import CommandKernel, command
 
 
 class Kernel(CommandKernel):
+    command_symbol = "!"
+
     @command('command1')
     def command1(self, code: str, *args, **kwargs) -> str:
         return code
@@ -56,6 +58,26 @@ class TestCommandParsing(TestCase):
         arg_parsing.assert_not_called()
 
 
+@patch.object(kernel, attribute="command1", wraps=kernel.command1)
+class TestStartSymbol(TestCase):
+    @patch.object(kernel, attribute="no_commands", wraps=kernel.no_commands)
+    def test_command_requires_start_symbol(
+        self, no_commands: MagicMock, command1: MagicMock
+    ):
+        code = "command1\n" + executed_code
+
+        kernel._run_commands(code)
+
+        command1.assert_not_called()
+        no_commands.assert_called_once_with(code)
+
+    def test_start_symbol_is_used_for_command_lookup(
+        self, command1: MagicMock
+    ):
+        kernel._run_commands("!    command1\n" + executed_code)
+        command1.assert_called_once_with(executed_code)
+
+
 @patch.object(kernel, attribute="command2", wraps=kernel.command2)
 @patch.object(kernel, attribute="command1", wraps=kernel.command1)
 class TestCommandsCall(TestCase):
@@ -73,12 +95,12 @@ class TestCommandsCall(TestCase):
         recorder.attach_mock(command2, "c2")
 
         kernel.do_execute(
-            code="command1\n" + "command2\n" + executed_code
+            code="!command1\n" + "!command2\n" + executed_code
         )
 
         ans_order = recorder.mock_calls
         exp_order = [
-            call.c1("command2\n" + executed_code),
+            call.c1("!command2\n" + executed_code),
             call.c2(executed_code)
         ]
         self.assertEqual(ans_order, exp_order)
@@ -88,9 +110,9 @@ class TestCommandsCall(TestCase):
         If method gets code to execute with command eliminated.
         '''
         kernel.do_execute(
-            code="command2\n" + "command1\n" + executed_code
+            code="!command2\n" + "!command1\n" + executed_code
         )
-        command2.assert_called_with("command1\n" + executed_code)
+        command2.assert_called_with("!command1\n" + executed_code)
         command1.assert_called_with(executed_code)
 
     def test_code_update(self, command1: MagicMock, command2: MagicMock):
@@ -98,8 +120,8 @@ class TestCommandsCall(TestCase):
         If the otput of the command passed to the next command.
         '''
         command1_out = "updated code"
-        command1.return_value = "command2\n" + command1_out
-        kernel.do_execute(code="command1")
+        command1.return_value = "!command2\n" + command1_out
+        kernel.do_execute(code="!command1")
         command2.assert_called_with(command1_out)
 
     def test_arguments(self, command1: MagicMock, comman2: MagicMock):
@@ -110,7 +132,7 @@ class TestCommandsCall(TestCase):
         exp_kwargs = {"kwarg1": "val1", "kwarg2": "val2"}
 
         command = " ".join(
-            ["command1"] +
+            ["!command1"] +
             exp_args +
             [f"--{kwarg} {val}" for kwarg, val in exp_kwargs.items()]
         )
@@ -133,9 +155,9 @@ class TestSpecialMethods(TestCase):
         recorder.attach_mock(always, "ar")
         recorder.attach_mock(command1, "c1")
 
-        kernel.do_execute(code="command1")
+        kernel.do_execute(code="!command1")
 
-        exp_order = [call.ar(code="command1"), call.c1('')]
+        exp_order = [call.ar(code="!command1"), call.c1('')]
         ans_order = recorder.mock_calls
         self.assertEqual(exp_order, ans_order)
 
@@ -143,7 +165,7 @@ class TestSpecialMethods(TestCase):
         '''
         Test if input passed correctly.
         '''
-        code = ("command1\n" + "command2\n" + executed_code)
+        code = ("!command1\n" + "!command2\n" + executed_code)
         kernel.do_execute(code=code)
         always.assert_called_once_with(code=code)
 
