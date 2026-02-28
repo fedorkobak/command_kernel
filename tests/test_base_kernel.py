@@ -74,8 +74,20 @@ class TestStartSymbol(TestCase):
     def test_start_symbol_is_used_for_command_lookup(
         self, command1: MagicMock
     ):
+        # If there is spaces between command_symbol and command
+        # it should still work fine
         kernel._run_commands("!    command1\n" + executed_code)
         command1.assert_called_once_with(executed_code)
+
+    @patch.object(kernel, attribute="command_symbol", new="")
+    def test_empty_command_symbol(self, command1: MagicMock):
+        """
+        If empty line specified as command symbol.
+        """
+        code = "command1\n" + executed_code
+        kernel._run_commands(code)
+
+        command1.assert_called_once()
 
 
 @patch.object(kernel, attribute="command2", wraps=kernel.command2)
@@ -124,7 +136,7 @@ class TestCommandsCall(TestCase):
         kernel.do_execute(code="!command1")
         command2.assert_called_with(command1_out)
 
-    def test_arguments(self, command1: MagicMock, comman2: MagicMock):
+    def test_arguments(self, command1: MagicMock, command2: MagicMock):
         '''
         If the arguments are passed to the method correctly.
         '''

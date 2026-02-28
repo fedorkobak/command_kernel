@@ -55,7 +55,7 @@ class CommandKernel(BashKernel, metaclass=CommandMeta):
     start_symbol: specifies the symbol that introduces the command.
     """
 
-    commnad_symbol: str = ""
+    command_symbol: str = ""
     
     def always(self, code: str) -> str:
         return code
@@ -100,6 +100,38 @@ class CommandKernel(BashKernel, metaclass=CommandMeta):
                 pargs.append(arg)
         return pargs, kwargs
 
+    def _parse_commnad(
+        self, command: str
+    ) -> tuple[Callable, list[str], dict[str, str]] | None:
+        """
+        Returns
+        -------
+        - Method correspoinding to the command.
+        - Positional arguments.
+        - Keyword arguments.
+        None if there is no command.
+        """
+        if not command.startswith(self.command_symbol):
+            return None
+
+        command = command.lstrip(self.command_symbol)
+        command = command.strip()
+
+        words = command.split(" ")
+        identifier = words.pop(0)
+
+        if identifier in self._commands:
+            args, kwargs = self._arg_parsing(args=words)
+            # code = self._commands[command](self, remaining) Wrong
+            # the method bounded to the command have to runned as attibute
+            method = self._commands[identifier]
+            method = getattr(self, method.__name__)
+            return method, args, kwargs
+
+        return None
+
+
+
     def _run_commands(self, code: str) -> str:
         """
         It pops the first line of `code` if it matches a command executes,
@@ -109,26 +141,19 @@ class CommandKernel(BashKernel, metaclass=CommandMeta):
         If no commands found `no_commands_run` executes.
         """
         self.always(code=code)
-        first = True
+        executed = False
         while True:
             command, remaining = self._pop_command(code=code)
-
-            words = command.split(" ")
-            identifier = words.pop(0)
-
-            if identifier in self._commands:
-                args, kwargs = self._arg_parsing(args=words)
-                # code = self._commands[command](self, remaining) Wrong
-                # the method bounded to the command have to runned as attibute
-                method = self._commands[identifier]
-                method = getattr(self, method.__name__)
-                code = method(remaining, *args, **kwargs)
-            else:
-                if first:
-                    code = self.no_commands(code)
+            command = self._parse_commnad(command)
+            if command is None:
                 break
+            method, args, kwargs = command
+            code = method(remaining, *args, **kwargs)
+            executed = True
 
-            first = False
+        if not executed:
+            self.no_commands(code)
+
         return code
 
     def do_execute(
