@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "command_kernel"
-version = "0.0.0"
+version = "0.0.1"
 dependencies = [
     "bash_kernel==0.10.0"
 ]
