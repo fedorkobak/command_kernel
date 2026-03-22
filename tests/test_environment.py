@@ -13,10 +13,7 @@ class TestEnvironment(TestCase):
         """
         file_name = "my_file"
         exp_content = "content"
-        code = (
-            f"#file {file_name}\n" +
-            exp_content
-        )
+        code = f"#file {file_name}\n" + exp_content
 
         environment_kernel.do_execute(code=code)
 

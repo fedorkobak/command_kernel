@@ -34,10 +34,7 @@ class TestCommandMeta(TestCase):
         """
         If `Commands` stores correct `_commands`
         """
-        exp = {
-            "key1": Commands.method1,
-            "key2": Commands.method2
-        }
+        exp = {"key1": Commands.method1, "key2": Commands.method2}
         self.assertEqual(Commands._commands, exp)
 
     def test_heir_add(self):
@@ -46,8 +43,7 @@ class TestCommandMeta(TestCase):
         """
         self.assertTrue("heir_command" in CommandsHeir._commands)
         self.assertEqual(
-            CommandsHeir._commands["heir_command"],
-            CommandsHeir.heir_method
+            CommandsHeir._commands["heir_command"], CommandsHeir.heir_method
         )
 
     def test_replaced_in_heir(self):
@@ -55,8 +51,7 @@ class TestCommandMeta(TestCase):
         If in heir the method under 'key2' correctly replaced.
         """
         self.assertEqual(
-            CommandsHeir._commands["key2"],
-            CommandsHeir.replace_method2
+            CommandsHeir._commands["key2"], CommandsHeir.replace_method2
         )
 
     def test_order(self):
@@ -65,7 +60,4 @@ class TestCommandMeta(TestCase):
         If `Heir2` takes the method from the latest ancestor `CommandHeir`,
         not from `Commands`.
         """
-        self.assertEqual(
-            Heir2._commands["key2"],
-            CommandsHeir.replace_method2
-        )
+        self.assertEqual(Heir2._commands["key2"], CommandsHeir.replace_method2)

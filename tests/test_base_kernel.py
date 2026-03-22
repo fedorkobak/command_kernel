@@ -9,11 +9,11 @@ from src.command_kernel import CommandKernel, command
 class Kernel(CommandKernel):
     command_symbol = "!"
 
-    @command('command1')
+    @command("command1")
     def command1(self, code: str, *args, **kwargs) -> str:
         return code
 
-    @command('command2')
+    @command("command2")
     def command2(self, code: str) -> str:
         return code
 
@@ -30,20 +30,14 @@ kernel = Kernel()
 class TestCommandParsing(TestCase):
     def test_arg_parsing(self):
         exp_args = ["pos1", "pos2"]
-        exp_kwargs = {
-            "keyword1": "val1",
-            "keyword2": "val2"
-        }
+        exp_kwargs = {"keyword1": "val1", "keyword2": "val2"}
 
-        command = (
-            exp_args +
-            [
-                # key word args to sequence fo words
-                word
-                for key, val in exp_kwargs.items()
-                for word in [f"--{key}", val]
-            ]
-        )
+        command = exp_args + [
+            # key word args to sequence fo words
+            word
+            for key, val in exp_kwargs.items()
+            for word in [f"--{key}", val]
+        ]
 
         args, kwargs = CommandKernel._arg_parsing(command)
         self.assertEqual(exp_args, args)
@@ -51,9 +45,9 @@ class TestCommandParsing(TestCase):
 
     @patch.object(Kernel, attribute="_arg_parsing")
     def test_arg_parsing_invocation(self, arg_parsing: MagicMock):
-        '''
+        """
         Argument parsing must only be invoked if command provided.
-        '''
+        """
         kernel._run_commands("not a command")
         arg_parsing.assert_not_called()
 
@@ -93,60 +87,56 @@ class TestStartSymbol(TestCase):
 @patch.object(kernel, attribute="command2", wraps=kernel.command2)
 @patch.object(kernel, attribute="command1", wraps=kernel.command1)
 class TestCommandsCall(TestCase):
-    '''
+    """
     Test if commands called correctly.
-    '''
+    """
 
     def test_order(self, command1: MagicMock, command2: MagicMock):
-        '''
+        """
         Check that the methods are being called in correct order.
-        '''
+        """
 
         recorder = Mock()
         recorder.attach_mock(command1, "c1")
         recorder.attach_mock(command2, "c2")
 
-        kernel.do_execute(
-            code="!command1\n" + "!command2\n" + executed_code
-        )
+        kernel.do_execute(code="!command1\n" + "!command2\n" + executed_code)
 
         ans_order = recorder.mock_calls
         exp_order = [
             call.c1("!command2\n" + executed_code),
-            call.c2(executed_code)
+            call.c2(executed_code),
         ]
         self.assertEqual(ans_order, exp_order)
 
     def test_pop_line(self, command1: MagicMock, command2: MagicMock):
-        '''
+        """
         If method gets code to execute with command eliminated.
-        '''
-        kernel.do_execute(
-            code="!command2\n" + "!command1\n" + executed_code
-        )
+        """
+        kernel.do_execute(code="!command2\n" + "!command1\n" + executed_code)
         command2.assert_called_with("!command1\n" + executed_code)
         command1.assert_called_with(executed_code)
 
     def test_code_update(self, command1: MagicMock, command2: MagicMock):
-        '''
+        """
         If the otput of the command passed to the next command.
-        '''
+        """
         command1_out = "updated code"
         command1.return_value = "!command2\n" + command1_out
         kernel.do_execute(code="!command1")
         command2.assert_called_with(command1_out)
 
     def test_arguments(self, command1: MagicMock, command2: MagicMock):
-        '''
+        """
         If the arguments are passed to the method correctly.
-        '''
+        """
         exp_args = ["arg1", "arg2"]
         exp_kwargs = {"kwarg1": "val1", "kwarg2": "val2"}
 
         command = " ".join(
-            ["!command1"] +
-            exp_args +
-            [f"--{kwarg} {val}" for kwarg, val in exp_kwargs.items()]
+            ["!command1"]
+            + exp_args
+            + [f"--{kwarg} {val}" for kwarg, val in exp_kwargs.items()]
         )
 
         kernel.do_execute(code=command)
@@ -158,36 +148,38 @@ class TestSpecialMethods(TestCase):
     """
     Test `always`: method that runned before any command.
     """
+
     @patch.object(kernel, attribute="command1", wraps=kernel.command2)
     def test_order(self, command1: MagicMock, always: MagicMock):
-        '''
+        """
         Test if `always` is executed before command.
-        '''
+        """
         recorder = Mock()
         recorder.attach_mock(always, "ar")
         recorder.attach_mock(command1, "c1")
 
         kernel.do_execute(code="!command1")
 
-        exp_order = [call.ar(code="!command1"), call.c1('')]
+        exp_order = [call.ar(code="!command1"), call.c1("")]
         ans_order = recorder.mock_calls
         self.assertEqual(exp_order, ans_order)
 
     def test_input(self, always: MagicMock):
-        '''
+        """
         Test if input passed correctly.
-        '''
-        code = ("!command1\n" + "!command2\n" + executed_code)
+        """
+        code = "!command1\n" + "!command2\n" + executed_code
         kernel.do_execute(code=code)
         always.assert_called_once_with(code=code)
 
 
 @patch.object(kernel, attribute="no_commands", wraps=kernel.command1)
 class TestNoCommands(TestCase):
-    '''
+    """
     Check that in case there is no specified commands the method
     `no_commands` is executed
-    '''
+    """
+
     def test_no_commands(self, no_commands: MagicMock):
         kernel.do_execute(code=executed_code)
         no_commands.assert_called_once_with(executed_code)

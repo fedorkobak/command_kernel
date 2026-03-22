@@ -1,16 +1,18 @@
 """
 An extension over the bash_kernel that allows hidden commands to be run
 """
+
 from typing import Callable, Any
 from bash_kernel.kernel import BashKernel
 from traitlets.traitlets import MetaHasTraits
 
 
 class CommandMeta(MetaHasTraits):
-    '''
+    """
     Meta class that stores methods with the specified `_command` attribute in
     the `_commands` dictionary.
-    '''
+    """
+
     def __init__(cls, name, bases, namespace):
         super().__init__(name, bases, namespace)
         cls._commands = dict[str, Callable]()
@@ -24,17 +26,18 @@ class CommandMeta(MetaHasTraits):
                 cls._commands[attribute._command] = attribute
 
 
-def command(command: str) -> Callable[
-    [Callable[[Any, str], str]],
-    Callable[[Any, str], str]
-]:
+def command(
+    command: str,
+) -> Callable[[Callable[[Any, str], str]], Callable[[Any, str], str]]:
     """
     The decorator adds the `_command` attribute to the decorated method.
     """
+
     def fun(method: Callable[[Any, str], str]) -> Callable[[Any, str], str]:
         # this is a part of design
         method._command = command  # type: ignore
         return method
+
     return fun
 
 
@@ -56,7 +59,7 @@ class CommandKernel(BashKernel, metaclass=CommandMeta):
     """
 
     command_symbol: str = ""
-    
+
     def always(self, code: str) -> str:
         return code
 
@@ -77,9 +80,7 @@ class CommandKernel(BashKernel, metaclass=CommandMeta):
         return (ans[0], ans[1]) if len(ans) > 1 else (ans[0], "")
 
     @classmethod
-    def _arg_parsing(
-        cls, args: list[str]
-    ) -> tuple[list[str], dict[str, str]]:
+    def _arg_parsing(cls, args: list[str]) -> tuple[list[str], dict[str, str]]:
         """
         Parses the list of words after command identifier to args and kwargs.
 
@@ -130,8 +131,6 @@ class CommandKernel(BashKernel, metaclass=CommandMeta):
 
         return None
 
-
-
     def _run_commands(self, code: str) -> str:
         """
         It pops the first line of `code` if it matches a command executes,
@@ -162,10 +161,9 @@ class CommandKernel(BashKernel, metaclass=CommandMeta):
         silent=True,
         store_history=True,
         user_expressions=None,
-        allow_stdin=False
+        allow_stdin=False,
     ):
         code = self._run_commands(code)
         return super().do_execute(
-            code, silent, store_history,
-            user_expressions, allow_stdin
+            code, silent, store_history, user_expressions, allow_stdin
         )
